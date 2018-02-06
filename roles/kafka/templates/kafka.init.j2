@@ -1,0 +1,143 @@
+#!/bin/sh
+#
+# chkconfig: 345 99 01
+# description: Kafka
+#
+# File : Kafka
+#
+# Description: Starts and stops the Kafka server
+#
+
+# Determine Kafka home
+if [ -z ${KAFKA_HOME+x} ]; then
+  export KAFKA_HOME=/opt/kafka
+fi
+
+# Source Kafka environment
+if [ -f "$KAFKA_HOME/config/kafka.env" ]; then
+  source $KAFKA_HOME/config/kafka.env
+fi
+
+# Set the Kafka user if not set previously
+if [ -z ${KAFKA_USER+x} ]; then
+  export KAFKA_USER=kafka
+fi
+
+# Set JMX port if not set previously
+if [ -z ${JMX_PORT+x} ]; then
+  export JMX_PORT=9999
+fi
+
+# Set the Kafka log directory if not set previously
+if [ -z ${LOG_DIR+x} ]; then
+  export LOG_DIR=$KAFKA_HOME/logs
+fi
+
+source /etc/rc.d/init.d/functions
+
+getPID()
+{
+  KAFKA_PID=$(ps -u "$KAFKA_USER" -o pid,cmd | grep kafka.Kafka | grep java | grep -v grep | awk '{print $1}')
+  echo $KAFKA_PID
+}
+
+zkStatus()
+{
+  declare -i zkNb=0
+  zks=$(cat $KAFKA_HOME/config/server.properties | grep zookeeper.connect= |  sed  "s/zookeeper.connect=//g" | tr "," " ")
+  for zk in ${zks[@]}
+  do 
+    host=$(echo $zk | tr ":" " " )
+    zkstate=$(echo mntr | nc $host | grep zk_server_state | sed  "s/zk_server_state//g")
+    if [[ $zkstate != *"follower"* ]] && [[ $zkstate != *"leader"* ]] 
+    then
+      message="[EROOR] zookeeper is not reachable in :  $host" >> $LOG_DIR/server.err
+    else
+      zkNb=zkNb+1
+    fi
+  done
+  echo $zkNb
+}
+
+start() {
+  MIN=2
+  echo -n "Starting Kafka:"
+  /sbin/runuser $KAFKA_USER -c "touch $LOG_DIR/server.out $LOG_DIR/server.err"
+  while (( $(zkStatus) < $MIN  )) 
+  do
+    echo "Sleep 2s: waiting zookeeper to be up/ready !!" >> $LOG_DIR/server.err
+    sleep 2
+  done
+  /sbin/runuser $KAFKA_USER -c "nohup $KAFKA_HOME/bin/kafka-server-start.sh $KAFKA_HOME/config/server.properties >> $LOG_DIR/server.out 2>> $LOG_DIR/server.err &"
+  echo " done."
+}
+
+stop() {
+  kafka_pid=$(getPID)
+  if [ "$kafka_pid" = "" ] ; then
+    echo "No Kafka process found"
+  else
+    echo -n "Stopping Kafka: $kafka_pid"
+    /sbin/runuser $KAFKA_USER -c "kill $kafka_pid "
+    # wait for 5 min max (600 x 0.5 sec), then force hardstop
+    T=0
+    while $0 status >/dev/null && [ $T -le 600 ]; do sleep 0.5; T=$(expr $T + 1); done
+    [ $T -ge 600 ] && hardstop || echo " done."
+  fi
+}
+
+hardstop() {
+  kafka_pid=$(getPID)
+  if [ "$kafka_pid" = "" ] ; then
+    echo "No Kafka process found"
+  else
+    echo -n "Stopping (hard) Kafka: $kafka_pid"
+    /sbin/runuser  $KAFKA_USER  -c "kill -9 $kafka_pid"
+    while $0 status > /dev/null; do sleep 0.5; done
+    echo " done."
+  fi
+}
+
+status() {
+  kafka_pid=$(getPID)
+  if [ "$kafka_pid" = "" ] ; then
+    echo "Stopped"
+    exit 3
+  else
+    echo "Running $kafka_pid"
+    exit 0
+  fi
+}
+
+restart() {
+  stop
+  start
+}
+
+case "$1" in
+  start)
+    start
+    ;;
+
+  stop)
+    stop
+    ;;
+  hardstop)
+    hardstop
+    ;;
+
+  status)
+    status
+    ;;
+
+  restart)
+    stop
+    start
+    ;;
+
+  *)
+    echo "Usage: $0 {start|stop|hardstop|status|restart}"
+    exit 1
+    ;;
+
+esac

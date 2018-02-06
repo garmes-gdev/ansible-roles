@@ -1,0 +1,122 @@
+- name: Installing lvm2
+  yum:
+    name: "lvm2"
+    state: "present"
+  become: true
+  tags: 
+    - lvm
+
+- name: Installing sg3_utils
+  yum:
+    name: "sg3_utils"
+    state: "present"
+  become: true
+  tags: 
+    - lvm
+
+- name: Checking for scsi devices
+  shell: "sg_scan"
+  become: true
+  register: "scsi_devices"
+  changed_when: False
+  when: (lvm_scan is defined and lvm_scan)
+  tags: 
+    - lvm
+
+- name: Rescanning for new disks
+  command: "/usr/bin/rescan-scsi-bus.sh"
+  become: true
+  changed_when: False
+  when: (lvm_scan is defined and lvm_scan)
+  tags: 
+    - lvm
+
+#===================volume groups=========================|
+
+- name: Creating new LVM volume group(s)
+  lvg:
+    vg: "{{ item.vgname }}"
+    pvs: "{{ item.disks|join(',') }}"
+    state: "present"
+  become: true
+  with_items: "{{ lvm_groups }}"
+  when: (item.create is defined and item.create)
+
+#====================logical volumes=======================|
+- name: Creating new LVM logical volume(s)
+  lvol:
+    vg: "{{ item.vgname }}"
+    lv: "{{ item.lvname }}"
+    size: "{{ item.size }}"
+    shrink: no
+    state: "present"
+  become: true
+  register: lvm
+  with_items:
+    - "{{ lvm_names }}"
+  when: (item.create is defined and item.create)
+  tags: 
+    - lvm
+
+- name: Creating new filesystem on new LVM logical volume(s)
+  filesystem:
+    fstype: "{{ item.filesystem }}"
+    dev: "/dev/{{ item.vgname }}/{{ item.lvname }}"
+    resizefs: yes
+  become: true
+  with_items:
+    - "{{ lvm_names }}"
+  when: (item.create is defined and item.create)
+  tags: 
+    - lvm
+
+- name: Mounting new filesystem(s)
+  mount:
+    name: "{{ item.mntp }}"
+    src: "/dev/{{ item.vgname }}/{{ item.lvname }}"
+    fstype: "{{ item.filesystem }}"
+    state: "mounted"
+  become: true
+  with_items:
+    - "{{ lvm_names }}"
+  when: (item.create is defined and item.create)
+  tags: 
+    - lvm
+
+# remove ========================================|
+- name: Unmounting filesystem(s)
+  mount:
+    name: "{{ item.mntp }}"
+    src: "/dev/{{ item.vgname }}/{{ item.lvname }}"
+    fstype: "{{ item.filesystem }}"
+    state: "absent"
+  become: true
+  with_items:
+    - "{{ lvm_names }}"
+  when: (item.create is defined and not item.create)
+  tags: 
+    - lvm
+
+- name: Removing LVM logical volume(s)
+  lvol:
+    vg: "{{ item.vgname }}"
+    lv: "{{ item.lvname }}"
+    state: "absent"
+    force: yes
+  become: true
+  with_items:
+    - "{{ lvm_names }}"
+  when: (item.create is defined and not item.create)
+  tags: 
+    - lvm
+
+- name: Removing LVM volume group(s)
+  lvg:
+    vg: "{{ item.vgname }}"
+    pvs: "{{ item.disks|join(',') }}"
+    state: "absent"
+  become: true
+  with_items: "{{ lvm_groups }}"
+  when: item.create is defined and not item.create
+  tags: 
+    - lvm

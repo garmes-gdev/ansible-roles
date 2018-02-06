@@ -1,0 +1,12 @@
+{% if kafka_opsgroup -%}
+%{{ kafka_opsgroup }} ALL=(ALL) NOPASSWD: ALL
+{% endif %}
+
+Cmnd_Alias KAFKATOOLS = /opt/kafka/bin/kafka-topics.sh,/opt/kafka/bin/kafka-acls.sh
+Defaults    env_keep += "KAFKA_OPTS"
+{% for group in kafka_tools_sudoGroups %}
+%{{ group }} ALL = (kafka) NOPASSWD: KAFKATOOLS
+{% endfor %}
+
+
+

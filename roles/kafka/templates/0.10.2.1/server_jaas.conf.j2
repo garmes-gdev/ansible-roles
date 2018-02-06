@@ -1,0 +1,16 @@
+KafkaServer {
+    com.sun.security.auth.module.Krb5LoginModule required
+    useKeyTab=true
+    storeKey=true
+    keyTab="/opt/kafka/config/kafka.keytab"
+    principal="kafka/{{ inventory_hostname }}@{{ kafka_security_kerberos_realm }};
+};
+
+// ZooKeeper client authentication
+Client {
+    com.sun.security.auth.module.Krb5LoginModule required
+    useKeyTab=true
+    storeKey=true
+    keyTab="/opt/kafka/config/kafkaAdmin.keytab"
+    principal="{{ kafka_security_kerberos_admin_principal }}@{{ kafka_security_kerberos_realm }};
+};

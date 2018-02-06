@@ -1,0 +1,14 @@
+Server {
+  com.sun.security.auth.module.Krb5LoginModule required
+  useKeyTab=true
+  keyTab="/opt/zookeeper/conf/zookeeper.keytab"
+  storeKey=true
+  useTicketCache=false
+  principal="zookeeper/{{ inventory_hostname }}@{{ zookeeper_security_kerberos_realm }};
+};
+
+Client {
+  com.sun.security.auth.module.Krb5LoginModule required
+  useTicketCache=true
+  doNotPrompt=true;
+};

@@ -1,0 +1,30 @@
+# This file is managed by Ansible
+export KAFKA_HOME=/opt/kafka
+export PATH="$PATH:$KAFKA_HOME/bin"
+export KAFKA_CLUSTER="{{ kafka_clusterName }}"
+export KAFKA_ID="{{ broker_id }}"
+export KAFKA_VERSION="{{ kafka_version }}"
+export KAFKA_RPM_VERSION="{{ kafka_version }}-{{ kafka_revision }}"
+
+export KAFKA_BROKER_LIST="{{ groups["kafka_servers"]|join(',') }}"
+
+export ZOOKEEPER_LIST="{{ kafka_zookeeper_hosts|join(',') }}"
+
+export KAFKA_BROKER="{{ groups["kafka_servers"]|join(':9092,') }}"
+
+export ZOOKEEPER="{{ kafka_zookeeper_hosts | join(":{0},".format(kafka_zookeeper_port)) }}:{{ kafka_zookeeper_port }}"
+
+{% if kafka_security_enable -%}
+export KAFKA_SECURITY_STATUS=true
+
+{% if kafka_security_kerberos_enable -%}
+export KAFKA_BROKER_SASL="{{ groups["kafka_servers"] | join(":{0},".format(kafka_security_kerberos_port )) }}:{{ kafka_security_kerberos_port }}"
+{% endif -%}
+
+{% if kafka_security_ssl_enable -%}
+export KAFKA_BROKER_SSL="{{ groups["kafka_servers"] | join(":{0},".format(kafka_security_ssl_port )) }}:{{ kafka_security_ssl_port }}"
+{% endif -%}
+
+{% else %}
+export KAFKA_SECURITY_STATUS=false
+{% endif -%}

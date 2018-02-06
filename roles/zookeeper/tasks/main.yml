@@ -1,0 +1,186 @@
+- fail:
+    msg: "Cannot determine zookeeper node ID of host {{ inventory_hostname }}"
+  when: (zk_id is not defined)
+
+# Prepare =============================================|
+- name: create zookeeper group 
+  group: 
+    name: zookeeper
+    gid: "{{ zookeeper_gid }}"
+    state: present
+  tags: 
+    - zookeeper
+    - zookeeper_prepare
+ 
+- name: create zookeeper user
+  user: 
+    name: zookeeper 
+    group: zookeeper
+    uid: "{{ zookeeper_uid }}"
+    home: "/opt/zookeeper"
+    shell: '/bin/bash'
+    state: present
+  tags: 
+    - zookeeper
+    - zookeeper_prepare
+
+- name: Make sure the zookeeper data directory exist 
+  file:
+    path: "{{ zookeeper_dataDir }}"
+    state: directory
+    mode: 0755
+    owner: zookeeper
+    group: zookeeper
+  tags: 
+    - zookeeper
+    - zookeeper_prepare
+
+- name: Make sure the different data directory exist 
+  file:
+    path: "{{ zookeeper_dataDir }}/data"
+    state: directory
+    mode: 0755
+    owner: kafka
+    group: kafka
+
+- name: Create zookeeper Yum Repository
+  yum_repository:
+    name: zookeeper
+    description: "Repository for zookeeper version {{ zookeeper_version }}"
+    baseurl: "{{ zookeeper_repository }}/{{ zookeeper_version }}/revisions/{{ zookeeper_revision }}"
+    gpgcheck: 0
+    enabled: 1
+  notify: yum-clean-all
+  tags: 
+    - zookeeper
+    - zookeeper_prepare
+
+- meta: flush_handlers
+
+# Install =============================================|
+
+- name: install zookeeper
+  yum:
+    name: "zookeeper"
+    state: latest
+  notify: systemd-daemon-reload
+  tags:
+    - zookeeper
+    - zookeeper_install
+
+- meta: flush_handlers
+
+# configure =============================================|
+
+- name: set zookeeper myid configuration
+  template: src=templates/zookeeper.myid.j2 dest={{ zookeeper_dataDir }}/data/myid force=yes
+  tags: 
+    - zookeeper
+    - zookeeper_config
+
+- name: nofile configuration
+  pam_limits:
+    domain: '@zookeeper'
+    limit_type: '-'
+    limit_item: nofile
+    value: "{{ zookeeper_nofile }}"
+  tags: 
+    - zookeeper
+    - zookeeper_config
+
+- name: Make sure the log directory exist 
+  file:
+    path: "{{ zookeeper_logDir }}"
+    state: directory
+    mode: 0755
+    owner: zookeeper
+    group: zookeeper
+  tags: 
+    - zookeeper
+    - zookeeper_config
+
+- name: set zookeeper java file
+  template: 
+    src: "templates/{{ zookeeper_version }}/java.env.j2"
+    dest: /opt/zookeeper/conf/java.env
+    owner: zookeeper
+    group: zookeeper
+    mode: 0644
+  tags: 
+    - zookeeper
+    - zookeeper_config
+
+- name: set the zookeeper zoo file
+  template: 
+    src: "templates/{{ zookeeper_version }}/zoo.cfg.j2"
+    dest: "/opt/zookeeper/conf/zoo.cfg.j2"
+    owner: root
+    group: root
+    mode: 0644
+  tags: 
+    - zookeeper
+    - zookeeper_config
+
+- name: set the zookeeper logging/log4j properties file
+  template: 
+    src: "templates/{{ zookeeper_version }}/log4j.properties.j2"
+    dest: /opt/zookeeper/conf/log4j.properties
+    owner: zookeeper
+    group: zookeeper
+    mode: 0644
+  tags: 
+    - zookeeper
+    - zookeeper_config
+
+- name: set the zookeeper profile file
+  template: 
+    src: "templates/zookeeper.profile.sh.j2"
+    dest: /etc/profile.d/zookeeper.sh
+    owner: root
+    group: root
+    mode: 0644
+  tags: 
+    - zookeeper
+    - zookeeper_config
+
+# Security ===============================|
+- name: set the zookeeper sudo file
+  template: 
+    src: "templates/zookeeper.sudo.j2"
+    dest: /etc/sudoers.d/10_zookeeper
+    owner: zookeeper
+    group: zookeeper
+    mode: 0644
+  when: zookeeper.security.enable == true
+  tags: 
+    - zookeeper
+    - zookeeper_security
+
+- name: set the zookeeper jaas file
+  template: 
+    src: "templates/{{ zookeeper.version }}/jaas.conf.j2"
+    dest: /opt/zookeeper/conf/jaas.conf
+    owner: zookeeper
+    group: zookeeper
+    mode: 0644
+  when: zookeeper.security.kerberos.enable == true
+  tags: 
+    - zookeeper
+    - zookeeper-security
+
+- copy:
+    src: "files/{{ inventory_hostname }}.keytab"
+    dest: /opt/zookeeper/conf/zookeeper.keytab
+    owner: zookeeper
+    group: zookeeper
+    mode: 0600
+  when: zookeeper.security.kerberos.enable == true
+  tags: 
+    - zookeeper
+    - zookeeper-security
+
+# Service ==========================| 
+
+- service:
+    name: zookeeper
+    state: started

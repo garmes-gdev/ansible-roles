@@ -1,0 +1,10 @@
+# Clean yum cache
+- name: yum-clean-all
+  command: yum clean all
+  args:
+    warn: no
+
+- name: systemd-daemon-reload
+  command: /bin/systemctl daemon-reload
+  args:
+    warn: no

@@ -1,0 +1,15 @@
+- name: Create Java Yum Repository
+  yum_repository:
+    name: java
+    description: Repository for Oracle JDK version {{ java_version }} - {{ java_revision }}
+    baseurl: "{{ java_repository }}/{{ java_version }}/revisions/{{ java_revision }}"
+    gpgcheck: 0
+    enabled: 1
+  notify: yum-clean-all
+- meta: flush_handlers
+
+- name: install the latest version of Java
+  yum:
+    name: "{{ java_package }}"
+    state: latest
+

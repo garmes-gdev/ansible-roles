@@ -1,0 +1,16 @@
+#These are your kafka cluster nodes
+[kafka_servers]
+kafka1.test.com  broker_id=0
+kafka2.test.com  broker_id=1
+kafka3.test.com  broker_id=2
+
+#These are your zookeeper cluster nodes
+[zk_servers]
+zk1.test.com  zk_id=1
+zk2.test.com  zk_id=2
+zk3.test.com  zk_id=3
+
+[test:children]
+kafka_servers
+
+

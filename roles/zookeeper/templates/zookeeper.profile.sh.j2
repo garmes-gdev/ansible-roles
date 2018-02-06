@@ -1,0 +1,6 @@
+# This file is managed by Ansible
+export ZOOKEEPER_HOME=/opt/zookeeper
+export PATH="$PATH:$ZOOKEEPER_HOME/bin"
+export ZOOKEEPER_CLUSTER={{ zookeeper_clusterName }}
+export ZOOKEEPER_ID={{ zk_id }}
+export ZOOKEEPER_VERSION={{ zookeeper_version }}

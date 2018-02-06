@@ -1,0 +1,84 @@
+# LVM ================================|
+lvm_scan: false
+lvm_groups: []
+# - vgname: vg00
+#   disks:
+#     - /dev/sdc
+#     - /dev/sdd
+#   create: true
+
+lvm_names: []
+#  - lvname: kafkadata
+#    create: true
+#    vgname: vg00
+#    size: 500g
+#    filesystem: ext4
+#    mount: true
+#    mntp: '/opt/kafkdata'
+
+# JAVA ===============================|
+java_package: "oracle-jdk8"
+java_repository: "http://yumserver.net/yum-java"
+java_version: "1.8.0_152"
+java_revision: 0
+
+# KAFKA ==============================|
+kafka_gid: 200187
+kafka_uid: 200377
+kafka_repository: 'http://yumserver.net/yum-kafka'
+
+kafka_serverProperties:
+    auto.create.topics.enable: false
+    delete.topic.enable: true
+    min.insync.replicas: 2
+
+kafka_nofile: 128000
+kafka_dataDirs: ['/opt/kafkadata']
+kafka_logDir: '/opt/kafka/logs'
+
+kafka_zookeeper_port: 2181
+kafka_java_heap: '-Xms1G -Xmx1G'
+kafka_java_home: '/usr/lib/jvm/java-1.8.0-oracle'
+kafka_scala_version: '2.11'
+kafka_scala_binaryVersion: '2.11.7'
+  
+# KAFKA Security =====================|
+
+kafka_security_enable: false
+kafka_security_interBrokerProtocol: 'SASL_PLAINTEXT'
+
+# Security | PLIANTEXT =========|
+kafka_security_plaintext_enable: true
+kafka_security_plaintext_port: 9092
+
+# Security | SSL ===============|
+kafka_security_ssl_enable: true
+kafka_security_ssl_port: 9094
+
+# Security | KERBEROS ==========|
+kafka_security_kerberos_enable: true
+kafka_security_kerberos_port: 9093
+kafka_security_kerberos_realm: 'MY.REALM.NET'
+
+
+# ZOOKEEPER =====================|
+
+zookeeper_version: '3.4.9'
+zookeeper_revision: '1'
+zookeeper_gid: 8301
+zookeeper_uid: 23841
+zookeeper_repository: 'http://yumserver.net/yum-zookeeper'
+zookeeper_dataDir: '/opt/zookeeper'
+zookeeper_logDir: '/opt/zookeeper/logs'
+
+zookeeper_port: 2181
+zookeeper_nofile: 65536
+zookeeper_java_home: '/usr/lib/jvm/java-1.8.0-oracle'
+#--security
+kafka_security_kerberos_enable: true
+
+kafka_security_kerberos_enable: true
+kafka_security_kerberos_realm: 'MY.REALM.NET'
+
+
+
