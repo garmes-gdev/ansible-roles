@@ -21,9 +21,11 @@ autopurge.purgeInterval=24
 server.{{ loop.index }}={{ server }}:2888:3888
 {% endfor %}
 
+{% if kafka_security_enable %}
 {% if kafka_security_kerberos_enable %}
 # The Kerberos configuration for Zookeeper
 authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
 jaasLoginRenew=3600000
 requireClientAuthScheme=sasl
+{% endif %}
 {% endif %}

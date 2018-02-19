@@ -40,8 +40,8 @@
     path: "{{ zookeeper_dataDir }}/data"
     state: directory
     mode: 0755
-    owner: kafka
-    group: kafka
+    owner: zookeeper
+    group: zookeeper
 
 - name: Create zookeeper Yum Repository
   yum_repository:
@@ -113,9 +113,9 @@
 - name: set the zookeeper zoo file
   template: 
     src: "templates/{{ zookeeper_version }}/zoo.cfg.j2"
-    dest: "/opt/zookeeper/conf/zoo.cfg.j2"
-    owner: root
-    group: root
+    dest: "/opt/zookeeper/conf/zoo.cfg"
+    owner: zookeeper
+    group: zookeeper
     mode: 0644
   tags: 
     - zookeeper
@@ -151,7 +151,7 @@
     owner: zookeeper
     group: zookeeper
     mode: 0644
-  when: zookeeper.security.enable == true
+  when: zookeeper_security_enable == true
   tags: 
     - zookeeper
     - zookeeper_security
@@ -163,7 +163,7 @@
     owner: zookeeper
     group: zookeeper
     mode: 0644
-  when: zookeeper.security.kerberos.enable == true
+  when: zookeeper_security_enable == true and zookeeper_security_kerberos_enable == true
   tags: 
     - zookeeper
     - zookeeper-security
@@ -174,7 +174,7 @@
     owner: zookeeper
     group: zookeeper
     mode: 0600
-  when: zookeeper.security.kerberos.enable == true
+  when: zookeeper_security_enable == true and zookeeper_security_kerberos_enable == true
   tags: 
     - zookeeper
     - zookeeper-security

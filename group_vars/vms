@@ -1,0 +1,109 @@
+# LVM ================================|
+lvm_scan: false
+lvm_groups:
+  - vgname: vg00
+    disks:
+    - /dev/sdc
+    create: true
+  - vgname: vg02
+    disks:
+    - /dev/sdd
+    create: true
+
+lvm_names:
+ - lvname: kafkadata
+   create: true
+   vgname: vg00
+   size: 100g
+   filesystem: ext4
+   mount: true
+   mntp: '/opt/kafkadata'
+ - lvname: kafka
+   create: true
+   vgname: vg00
+   size: 10g
+   filesystem: ext4
+   mount: true
+   mntp: '/opt/kafka'   
+ - lvname: zookeeperdata
+   create: true
+   vgname: vg02
+   size: 20g
+   filesystem: ext4
+   mount: true
+   mntp: '/opt/zookeeperdata'
+ - lvname: zookeeper
+   create: true
+   vgname: vg02
+   size: 1g
+   filesystem: ext4
+   mount: true
+   mntp: '/opt/zookeeper'
+
+# JAVA ===============================|
+java_version: "1.8.0_152"
+java_revision: 0
+
+# KAFKA ==============================|
+kafka_gid: 200187
+kafka_uid: 200377
+
+kafka_version: 0.10.2.1
+kafka_clusterName: vms
+
+kafka_zookeeper_hosts: 
+
+kafka_serverProperties:
+    auto.create.topics.enable: false
+    delete.topic.enable: true
+    min.insync.replicas: 2
+
+kafka_nofile: 128000
+kafka_dataDirs: ['/opt/kafkadata']
+kafka_logDir: '/opt/kafka/logs'
+
+kafka_zookeeper_port: 2181
+kafka_java_heap: '-Xms2G -Xmx2G'
+kafka_java_home: '/usr/lib/jvm/java-1.8.0-oracle'
+kafka_scala_version: '2.11'
+kafka_scala_binaryVersion: '2.11.7'
+  
+# KAFKA Security =====================|
+
+kafka_security_enable: false
+kafka_security_interBrokerProtocol: 'SASL_PLAINTEXT'
+
+# Security | PLIANTEXT =========|
+kafka_security_plaintext_enable: true
+kafka_security_plaintext_port: 9092
+
+# Security | SSL ===============|
+kafka_security_ssl_enable: true
+kafka_security_ssl_port: 9094
+
+# Security | KERBEROS ==========|
+kafka_security_kerberos_enable: true
+kafka_security_kerberos_port: 9093
+kafka_security_kerberos_realm: 'MY.REALM.NET'
+
+
+# ZOOKEEPER =====================|
+
+zookeeper_clusterName: vms
+zookeeper_version: '3.4.9'
+zookeeper_revision: '1'
+zookeeper_gid: 8301
+zookeeper_uid: 23841
+zookeeper_dataDir: '/opt/zookeeperdata'
+zookeeper_logDir: '/opt/zookeeper/logs'
+
+zookeeper_port: 2181
+zookeeper_nofile: 65536
+zookeeper_java_home: '/usr/lib/jvm/java-1.8.0-oracle'
+#--security
+zookeeper_security_enable: false
+zookeeper_security_kerberos_enable: true
+zookeeper_security_kerberos_realm: 'MY.REALM.NET'
+
+
+

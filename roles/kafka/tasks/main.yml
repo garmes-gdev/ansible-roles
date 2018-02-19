@@ -45,32 +45,6 @@
     - kafka
     - kafka_prepare
 
-- name: Make sure the different Kafka data directories exist 
-  file:
-    path: "{{ item }}/data"
-    state: directory
-    mode: 0755
-    owner: kafka
-    group: kafka
-  with_items:
-    - "{{ kafka_dataDirs }}"
-  tags: 
-    - kafka
-    - kafka_prepare
-
-- name: Make sure the different Kafka data directories exist 
-  file:
-    path: "{{ item }}/data"
-    state: directory
-    mode: 0755
-    owner: kafka
-    group: kafka
-  with_items:
-    - "{{ kafka_dataDirs }}"
-  tags: 
-    - kafka
-    - kafka_prepare
-
 - name: Create Kafka Yum Repository
   yum_repository:
     name: kafka
@@ -162,7 +136,7 @@
     owner: kafka
     group: kafka
     mode: 0644
-  when: kafka.security.enable == true
+  when: kafka_security_enable == true
   tags: 
     - kafka
     - kafka-security
@@ -174,53 +148,57 @@
     owner: kafka
     group: kafka
     mode: 0644
-  when: kafka.security.enable == true
+  when: kafka_security_enable == true
   tags: 
     - kafka
     - kafka-security
 
-- copy:
+- name: set kafka Admin keytab
+  copy:
     src: "files/{{ kafka_security_kerberos_admin_principal }}.keytab"
     dest: /opt/kafka/config/kafkaAdmin.keytab
     owner: kafka
     group: kafka
     mode: 0600
-  when: kafka.security.enable == true and kafka.security.kerberos.enable == true
+  when: kafka_security_enable == true and kafka_security_kerberos_enable == true
   tags: 
     - kafka
     - kafka-security
 
-- copy:
+- name: set kafka keytab
+  copy:
     src: "files/{{ inventory_hostname }}.keytab"
     dest: /opt/kafka/config/kafka.keytab
     owner: kafka
     group: kafka
     mode: 0600
-  when: kafka.security.enable == true and kafka.security.kerberos.enable == true
+  when: kafka_security_enable == true and kafka_security_kerberos_enable == true
   tags: 
     - kafka
     - kafka-security
 
 # Security SSL ================================|
 
-- copy:
+- name: set kafka server truststore jks
+  copy:
     src: "files/{{ inventory_hostname }}.truststore.jks"
     dest: /opt/kafka/config/kafka.server.truststore.jks
     owner: kafka
     group: kafka
     mode: 0600
-  when: kafka.security.enable == true and kafka.security.ssl.enable == true
+  when: kafka_security_enable == true and kafka_security_ssl_enable == true
   tags: 
     - kafka
     - kafka-security
 
-- copy:
+- name: set kafka server keystore jks
+  copy:
     src: "files/{{ inventory_hostname }}.keystore.jks"
     dest: /opt/kafka/config/kafka.server.keystore.jks
     owner: kafka
     group: kafka
     mode: 0600
-  when: kafka.security.enable == true and kafka.security.ssl.enable == true
+  when: kafka_security_enable == true and kafka_security_ssl_enable == true
   tags: 
     - kafka
     - kafka-security
