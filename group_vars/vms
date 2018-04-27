@@ -41,17 +41,24 @@ lvm_names:
    mntp: '/opt/zookeeper'
 
 # JAVA ===============================|
+java_package: "oracle-jdk8"
+java_repository: "http://my_yum_server/java"
 java_version: "1.8.0_152"
 java_revision: 0
 
 # KAFKA ==============================|
 kafka_gid: 200187
 kafka_uid: 200377
+kafka_repository: 'http://my_yum_server/kafka'
 
 kafka_version: 0.10.2.1
+kafka_revision: 1.el7
 kafka_clusterName: vms
 
 kafka_zookeeper_hosts: 
+  - zk1.dev.net
+  - zk2.dev.net
+  - zk3.dev.net
 
 kafka_serverProperties:
     auto.create.topics.enable: false
@@ -94,6 +101,7 @@ zookeeper_version: '3.4.9'
 zookeeper_revision: '1'
 zookeeper_gid: 8301
 zookeeper_uid: 23841
+zookeeper_repository: 'http://my_yum_server/zookeeper'
 zookeeper_dataDir: '/opt/zookeeperdata'
 zookeeper_logDir: '/opt/zookeeper/logs'
 

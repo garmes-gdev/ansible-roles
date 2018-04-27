@@ -139,7 +139,7 @@
   when: kafka_security_enable == true
   tags: 
     - kafka
-    - kafka-security
+    - kafka_security
 # Security KERBEROS ================================|
 - name: set the kafka jaas file
   template: 
@@ -151,7 +151,7 @@
   when: kafka_security_enable == true
   tags: 
     - kafka
-    - kafka-security
+    - kafka_security
 
 - name: set kafka Admin keytab
   copy:
@@ -163,7 +163,7 @@
   when: kafka_security_enable == true and kafka_security_kerberos_enable == true
   tags: 
     - kafka
-    - kafka-security
+    - kafka_security
 
 - name: set kafka keytab
   copy:
@@ -175,7 +175,7 @@
   when: kafka_security_enable == true and kafka_security_kerberos_enable == true
   tags: 
     - kafka
-    - kafka-security
+    - kafka_security
 
 # Security SSL ================================|
 
@@ -189,7 +189,7 @@
   when: kafka_security_enable == true and kafka_security_ssl_enable == true
   tags: 
     - kafka
-    - kafka-security
+    - kafka_security
 
 - name: set kafka server keystore jks
   copy:
@@ -201,7 +201,7 @@
   when: kafka_security_enable == true and kafka_security_ssl_enable == true
   tags: 
     - kafka
-    - kafka-security
+    - kafka_security
 
 
 # Service ===================================|

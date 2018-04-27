@@ -10,7 +10,7 @@ export KAFKA_BROKER_LIST="{{ groups["kafka_servers"]|join(',') }}"
 
 export ZOOKEEPER_LIST="{{ kafka_zookeeper_hosts|join(',') }}"
 
-export KAFKA_BROKER="{{ groups["kafka_servers"]|join(':9092,') }}"
+export KAFKA_BROKER="{{ groups["kafka_servers"]|join(":{0},".format(kafka_security_plaintext_port)) }}:{{ kafka_security_plaintext_port }}"  
 
 export ZOOKEEPER="{{ kafka_zookeeper_hosts | join(":{0},".format(kafka_zookeeper_port)) }}:{{ kafka_zookeeper_port }}"
 
